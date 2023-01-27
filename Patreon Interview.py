@@ -210,4 +210,93 @@ class Cart(object):
                 )
             total += price - best_discount
         return total
+    
+    
+"""
+Develop a structure that will 
+Implement a password generator (generate random strings given a charset).
+Be able to toggle charsets on/off for the password generation function.
+"""
+from collections import OrderedDict
+from enum import Enum
+from random import choices, randint
+
+class PasswordGenerator:
+    def __init__(self):
+        self.charToIdx = {}
+        self.list = []
+
+    def insert(self, ch):
+        if ch in self.charToIdxmap:
+            return False
+        self.charToIdx[ch] = len(self.list)
+        self.list.append(ch)
+        return True
+
+    def toggle(self, ch):
+        idx = self.charToIdx.get(val, None)
+        if idx is None:
+            # ch is not present
+            self.insert(ch)
+            return False
+        #Swap idx with end and then pop
+        lastIdx = len(self.list) - 1
+        lastVal = self.list[lastIdx]
+        
+        self.list[idx], self.list[lastIdx] = lastVal, val
+        self.charToIdx[lastVal] = idx
+        del self.charToIdx[val]
+        self.list.pop()
+        return True
+
+    def getRandom(self, size):
+        if not self.list:
+            return None
+        lastIdx = len(self.list) - 1
+        return "".join(self.list[randint(0, lastIdx)] for _ in range(size))
+
+class CharacterSet(Enum):
+    CAPITALS = 1
+    LOWERCASES = 2
+    NUMBERS = 3
+    SPECIALS = 4
+
+class PasswordGenerator2:
+    def __init__(self):
+        self.capitals = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        self.lowercases = "abcdefghijklmnopqrstuvwxyz"
+        self.numbers = "0123456789"
+        self.specials = "`~!@#$%^&*()_+-=[]\\{}|;':\",./<>?"
+        self.enumToCharset = OrderedDict((
+            (CharacterSet.CAPITALS, self.capitals),
+            (CharacterSet.LOWERCASES, self.lowercases),
+            (CharacterSet.NUMBERS, self.numbers),
+            (CharacterSet.SPECIALS, self.specials)
+            )
+        )
+        self.enumToEnabled = {key: True for key in self.enumToCharset}
+        self.orderedKeys = (
+            CharacterSet.CAPITALS,
+            CharacterSet.LOWERCASES,
+            CharacterSet.NUMBERS,
+            CharacterSet.SPECIALS
+        )
+
+    def toggle(self, charset):
+        self.enumToEnabled[charset] = not self.enumToEnabled[charset]
+
+    def getRandom(self, size):
+        weights = []
+        for charsetEnum in self.enumToCharset:
+            if self.enumToEnabled[charsetEnum]:
+                weights.append(len(self.enumToCharset[charsetEnum]))
+            else:
+                weights.append(0)
+        picks = choices(self.orderedKeys, weights=weights, k=size)
+        stringBuilder = []
+        for pick in picks:
+            charset = self.enumToCharset[pick]
+            lastIdx = len(charset) - 1
+            stringBuilder.append(charset[randint(0, lastIdx)])
+        return "".join(stringBuilder)
 
